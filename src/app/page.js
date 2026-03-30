@@ -8,15 +8,15 @@ export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [datalist, setDatalist] = useState([
-    { text: "All", isActiveted: false },
+    { text: "All", isActiveted: true },
     { text: "Active", isActiveted: false },
     { text: "Completed", isActiveted: false },
   ]);
   const deleteTask = (id) => {
-    if (window.alert("Neeree yu") === true) {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      const updatedTasks = tasks.filter((task) => task.id !== id);
+      setTasks(updatedTasks);
     }
-    const updatedTasks = tasks.filter((task) => task.id !== id);
-    setTasks(updatedTasks);
   };
   const handleAdd = () => {
     if (inputValue === "") return;
@@ -27,21 +27,23 @@ export default function Home() {
     setInputValue("");
   };
   const isActive = (index) => {
-    const updatedDatalist = datalist.map((item, i) => {
-      return {
-        ...item,
-        isActiveted: i === index,
-      };
-    });
-
+    const updatedDatalist = datalist.map((item, i) => ({
+      ...item,
+      isActiveted: i === index,
+    }));
     setDatalist(updatedDatalist);
   };
-
-  const toggleCheck = (index) => {
-    const newTasks = [...tasks];
-    newTasks[index].completed = !newTasks[index].completed;
-    setTasks(newTasks);
+  const toggleCheck = (id) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task,
+      ),
+    );
   };
+  const clearCompleted = () => {
+    setTasks(tasks.filter((task) => !task.completed));
+  };
+
   const currentFilter =
     datalist.find((item) => item.isActiveted)?.text || "All";
 
@@ -50,13 +52,15 @@ export default function Home() {
     if (currentFilter === "Completed") return task.completed;
     return true;
   });
+
+  const completedCount = tasks.filter((t) => t.completed).length;
+
   return (
     <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4 font-sans text-gray-900">
       <div className="bg-white shadow-sm rounded-[32px] p-10 w-full max-w-[450px]">
         <h1 className="text-center text-3xl font-bold text-black mb-6">
           To-Do list
         </h1>
-
         <div className="flex gap-2 mb-6">
           <input
             value={inputValue}
@@ -71,6 +75,7 @@ export default function Home() {
             Add
           </button>
         </div>
+
         <div className="flex gap-2 mb-10">
           {datalist.map((element, index) => (
             <Button
@@ -88,14 +93,14 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {filteredTasks.map((task, index) => (
+              {filteredTasks.map((task) => (
                 <div
                   className="flex items-center justify-between group bg-gray-100 rounded-md p-2"
                   key={task.id}
                 >
                   <div className="flex items-center gap-4">
                     <div
-                      onClick={() => toggleCheck(index)}
+                      onClick={() => toggleCheck(task.id)}
                       className={`w-6 h-6 flex items-center justify-center cursor-pointer border-2 rounded-md 
                         ${task.completed ? "bg-[#4F80FF] border-[#4F80FF]" : "bg-white border-gray-300"}`}
                     >
@@ -125,8 +130,22 @@ export default function Home() {
               ))}
             </div>
           )}
+          <div className="flex justify-between items-center mb-4 px-1 pt-4">
+            <p className="text-sm text-gray-400">
+              {tasks.length > 0
+                ? `${completedCount} of ${tasks.length} tasks completed`
+                : "No tasks yet"}
+            </p>
+            {completedCount > 0 && (
+              <button
+                onClick={clearCompleted}
+                className="text-xs text-red-400 hover:text-red-500 font-semibold"
+              >
+                Clear Completed
+              </button>
+            )}
+          </div>
         </div>
-
         <div className="text-center text-gray-400 text-sm mt-12">
           Powered by{" "}
           <span className="text-[#4F80FF] font-medium">Pinecone academy</span>
